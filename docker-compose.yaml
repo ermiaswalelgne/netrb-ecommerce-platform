@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  product:
+    build: ./services/product
+    ports:
+      - "8080:8080"
+    networks:
+      - ecommerce-net
+
+  user:
+    build: ./services/user
+    ports:
+      - "8081:8081"
+    networks:
+      - ecommerce-net
+
+  order:
+    build: ./services/order
+    ports:
+      - "8082:8082"
+    networks:
+      - ecommerce-net
+
+networks:
+  ecommerce-net:
+    driver: bridge
