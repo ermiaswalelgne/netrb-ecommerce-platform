@@ -53,9 +53,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Debug Secrets (for testing only)
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
         run: |
-          echo "Docker Username: ${{ secrets.DOCKER_USERNAME }}"
-          echo "Access Token Length: ${#secrets.DOCKER_ACCESS_TOKEN}"
+          echo "Docker Username: $DOCKER_USERNAME"
+          echo "Access Token Length: ${#DOCKER_ACCESS_TOKEN}"
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
