@@ -19,16 +19,30 @@ jobs:
         uses: actions/checkout@v3
 
       # Remove pre-installed Go to avoid conflicts
-      - name: Remove Old Go Versions
-        run: sudo rm -rf /usr/local/go /opt/hostedtoolcache/go
+      - name: Remove Pre-installed Go
+        run: |
+          sudo rm -rf /usr/local/go
+          sudo rm -rf /opt/hostedtoolcache/go
+          which go || echo "Go is not installed"
+
       # Set up Go environment
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: 1.20
+
       # Check which Go version is being used during the build process
       - name: Check Go Version
         run: go version
+
+      # Debug Go environment
+      - name: Debug Go Environment
+        run: |
+          echo "PATH: $PATH"
+          echo "GOROOT: $GOROOT"
+          echo "GOPATH: $GOPATH"
+          which go
+          go env
 
       # Install dependencies and run tests
       - name: Install Dependencies and Run Tests
