@@ -54,8 +54,8 @@ jobs:
 
       - name: Debug Secrets (for testing only)
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_ACCESS_TOKEN: ${{ vars.DOCKER_ACCESS_TOKEN }}
         run: |
           echo "Docker Username: $DOCKER_USERNAME"
           echo "Access Token Length: ${#DOCKER_ACCESS_TOKEN}"
