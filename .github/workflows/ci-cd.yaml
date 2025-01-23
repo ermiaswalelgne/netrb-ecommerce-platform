@@ -23,6 +23,9 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.20
+      # Check which Go version is being used during the build process
+      - name: Check Go Version
+        run: go version
 
       # Install dependencies and run tests
       - name: Install Dependencies and Run Tests
