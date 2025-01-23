@@ -14,45 +14,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Step 1: Checkout the repository
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Remove pre-installed Go to avoid conflicts
-      - name: Remove Pre-installed Go
+      # Step 2: Remove all old Go versions
+      - name: Remove Old Go Versions
         run: |
-          sudo rm -rf /usr/local/go
-          sudo rm -rf /opt/hostedtoolcache/go
-          which go || echo "Go is not installed"
+          sudo rm -rf /usr/local/go /opt/hostedtoolcache/go
 
-      # Set up Go environment
-      - name: Set up Go
+      # Step 3: Set up the required Go version
+      - name: Set Up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: "1.20"
 
-      # Update PATH to use the new Go version
-      - name: Update PATH for Go 1.20
-        run: |
-          echo "PATH=$(go env GOPATH)/bin:$PATH" >> $GITHUB_ENV
-
-      # Verify Go environment
-      - name: Verify Go Environment
+      # Step 4: Verify the correct Go version is used
+      - name: Verify Go Version
         run: |
           echo "PATH: $PATH"
           echo "GOROOT: $GOROOT"
-          echo "GOPATH: $GOPATH"
-          which go
           go version
-          go env
 
-      # Install dependencies and run tests
-      - name: Install Dependencies and Run Tests
+      # Step 5: Build and test services
+      - name: Build and Test Services
         run: |
           cd services/product && go mod tidy && go test ./...
           cd ../user && go mod tidy && go test ./...
           cd ../order && go mod tidy && go test ./...
-
   build-and-push-docker:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
