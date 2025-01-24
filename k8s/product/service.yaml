@@ -9,5 +9,5 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-      cnodePort: 30732  # Ensure this matches the NodePort you are using
+      nodePort: 30732  # Ensure this matches the NodePort you are using
   type: NodePort
