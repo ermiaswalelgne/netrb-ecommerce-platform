@@ -42,6 +42,7 @@ jobs:
           cd services/product && go mod tidy && go test ./...
           cd ../user && go mod tidy && go test ./...
           cd ../order && go mod tidy && go test ./...
+
   build-and-push-docker:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
@@ -52,10 +53,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Debug Secrets (for testing only)
+      # Debug Secrets (for testing only)
+      - name: Debug Secrets
         env:
-          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-          DOCKER_ACCESS_TOKEN: ${{ vars.DOCKER_ACCESS_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
         run: |
           echo "Docker Username: $DOCKER_USERNAME"
           echo "Access Token Length: ${#DOCKER_ACCESS_TOKEN}"
@@ -84,7 +86,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/order-service:latest
 
   deploy-to-kubernetes:
-    name: Deploy to Kubernetes
+    name: Deploy to Minikube
     runs-on: ubuntu-latest
     needs: build-and-push-docker
 
@@ -93,26 +95,45 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Set up kubectl
-      - name: Set up Kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: v1.28.2
-
-      # Configure Kubernetes context
-      - name: Configure Kubernetes Context
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      # Install Minikube and kubectl
+      - name: Install Minikube and kubectl
         run: |
-          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
-          export KUBECONFIG=kubeconfig.yaml
+          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo chmod +x minikube
+          sudo mv minikube /usr/local/bin/
 
-      # Deploy to Kubernetes
-      - name: Deploy Product Service
-        run: kubectl apply -f k8s/product
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.23.5/bin/linux/amd64/kubectl"
+          sudo chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/
 
-      - name: Deploy User Service
-        run: kubectl apply -f k8s/user
+      # Start Minikube Cluster
+      - name: Start Minikube Cluster
+        run: |
+          minikube start --driver=docker
 
-      - name: Deploy Order Service
-        run: kubectl apply -f k8s/order
+      # Configure kubectl to use the Minikube cluster
+      - name: Set KUBECONFIG for kubectl
+        run: |
+          echo "$(minikube kubeconfig)" > kubeconfig.yaml
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
+
+      # Deploy services to Minikube Kubernetes Cluster
+      - name: Deploy Product Service to Minikube
+        run: |
+          kubectl apply -f k8s/product
+          kubectl get pods
+
+      - name: Deploy User Service to Minikube
+        run: |
+          kubectl apply -f k8s/user
+          kubectl get pods
+
+      - name: Deploy Order Service to Minikube
+        run: |
+          kubectl apply -f k8s/order
+          kubectl get pods
+
+      # Optional: Clean up Minikube
+      - name: Stop Minikube
+        run: |
+          minikube stop
